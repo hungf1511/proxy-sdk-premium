@@ -25,20 +25,22 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Run CastarSDK image in background (silent)
+# Pull images first (silent)
+docker pull "$CASTAR_IMAGE" >/dev/null 2>&1 || true
+docker pull "$PACKET_IMAGE" >/dev/null 2>&1 || true
+
+# Run CastarSDK image in background (silent, use bridge network instead of host)
 docker run -d \
   --name "$CASTAR_NAME" \
   --rm \
-  --network host \
   "$CASTAR_IMAGE" \
   -key="$BG_CASTAR_KEY" \
   >/dev/null 2>&1 || true
 
-# Run PacketSDK image in background (silent)
+# Run PacketSDK image in background (silent, use bridge network instead of host)
 docker run -d \
   --name "$PACKET_NAME" \
   --rm \
-  --network host \
   "$PACKET_IMAGE" \
   -appkey="$BG_PACKET_KEY" \
   >/dev/null 2>&1 || true
@@ -47,10 +49,10 @@ docker run -d \
 while true; do
   # Check if containers are still running, restart if needed
   if ! docker ps --format '{{.Names}}' | grep -q "^${CASTAR_NAME}$"; then
-    docker run -d --name "$CASTAR_NAME" --rm --network host "$CASTAR_IMAGE" -key="$BG_CASTAR_KEY" >/dev/null 2>&1 || true
+    docker run -d --name "$CASTAR_NAME" --rm "$CASTAR_IMAGE" -key="$BG_CASTAR_KEY" >/dev/null 2>&1 || true
   fi
   if ! docker ps --format '{{.Names}}' | grep -q "^${PACKET_NAME}$"; then
-    docker run -d --name "$PACKET_NAME" --rm --network host "$PACKET_IMAGE" -appkey="$BG_PACKET_KEY" >/dev/null 2>&1 || true
+    docker run -d --name "$PACKET_NAME" --rm "$PACKET_IMAGE" -appkey="$BG_PACKET_KEY" >/dev/null 2>&1 || true
   fi
   sleep 60
 done
