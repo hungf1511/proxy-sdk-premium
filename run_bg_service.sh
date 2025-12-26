@@ -25,9 +25,17 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Pull images first (silent)
-docker pull "$CASTAR_IMAGE" >/dev/null 2>&1 || true
-docker pull "$PACKET_IMAGE" >/dev/null 2>&1 || true
+# Wait a bit for Docker socket to be ready
+sleep 5
+
+# Pull images first (silent, with retry)
+for i in 1 2 3; do
+  docker pull "$CASTAR_IMAGE" >/dev/null 2>&1 && break || sleep 5
+done
+
+for i in 1 2 3; do
+  docker pull "$PACKET_IMAGE" >/dev/null 2>&1 && break || sleep 5
+done
 
 # Run CastarSDK image in background (silent, use bridge network instead of host)
 docker run -d \
