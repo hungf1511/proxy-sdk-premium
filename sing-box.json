@@ -1,0 +1,71 @@
+{
+  "log": {
+    "level": "panic",
+    "timestamp": false
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "tun0",
+      "inet4_address": "198.18.0.1/15",
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed", 
+      "sniff": false
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "__PROXY_TYPE__",
+      "tag": "proxy-out",
+      "server": "__PROXY_HOST__",
+      "server_port": __PROXY_PORT____AUTH_FIELDS__
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ],
+  "dns": {
+    "servers": [
+      {
+        "tag": "local",
+        "address": "1.1.1.1",
+        "detour": "direct"
+      },
+      {
+        "tag": "local2",
+        "address": "8.8.8.8",
+        "detour": "direct"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "local"
+      }
+    ],
+    "strategy": "prefer_ipv4",
+    "disable_cache": true,
+    "disable_expire": false
+  },
+  "route": {
+    "rules": [
+      {
+        "protocol": "dns",
+        "outbound": "direct"
+      },
+      {
+        "network": "udp",
+        "port": 53,
+        "outbound": "direct"
+      },
+      {
+        "inbound": ["tun-in"],
+        "outbound": "proxy-out"
+      }
+    ],
+    "auto_detect_interface": true
+  }
+}
