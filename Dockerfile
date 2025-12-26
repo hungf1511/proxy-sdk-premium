@@ -50,7 +50,7 @@ RUN mkdir -p /opt/packetsdk && \
     done && \
     rm -rf /tmp/packetsdk-src
 
-# Copy scripts and JSON config (premium version with health monitor)
+# Copy scripts and JSON config
 COPY entrypoint.sh init_singbox.sh run_onlink.sh run_castar.sh run_packetsdk.sh run_health_monitor.sh /app/
 COPY sing-box.json /app/
 RUN chmod +x /app/*.sh
@@ -66,5 +66,3 @@ ENV GOMAXPROCS=1 \
     PROXY_PASS=""
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-
-

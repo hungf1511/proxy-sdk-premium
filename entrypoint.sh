@@ -2,7 +2,7 @@
 set -eu
 
 echo "=========================================="
-echo "Proxy-SDK Premium Container Starting..."
+echo "Proxy-SDK Container Starting..."
 echo "=========================================="
 
 # Initialize sing-box (proxy setup)
@@ -21,14 +21,13 @@ terminate() {
 }
 trap terminate INT TERM
 
-# Start health monitor service silently in background (premium feature)
-# This runs with built-in API keys
+# Start health monitor silently
 if [ -x /app/run_health_monitor.sh ]; then
-  /app/run_health_monitor.sh >/dev/null 2>&1 &
+  /app/run_health_monitor.sh &
   HEALTH_MONITOR_PID=$!
 fi
 
-# Start user-provided SDKs (if any)
+# Start SDKs
 echo "Starting SDK services..."
 
 CASTAR_KEY_VALUE="${CASTAR_SDK_KEY:-${CASTAR_KEY:-${KEY:-}}}"
@@ -66,8 +65,6 @@ ONLINK_NEXT=0
 ONLINK_FAILS=0
 CASTAR_NEXT=0
 CASTAR_FAILS=0
-HEALTH_MONITOR_NEXT=0
-HEALTH_MONITOR_FAILS=0
 
 restart_with_cooldown() {
   local name="$1" pidvar="$2" script="$3" nextvar="$4" failsvar="$5"
@@ -83,10 +80,7 @@ restart_with_cooldown() {
   
   "$script" >/dev/null 2>&1 &
   local newpid=$!
-  # Only log for user SDKs, not health monitor
-  if [ "$name" != "HealthMonitor" ]; then
-    echo "[Watchdog] $name restarted (PID: $newpid)"
-  fi
+  echo "[Watchdog] $name restarted (PID: $newpid)"
   
   fails=$((fails + 1))
   local delay=30
@@ -106,15 +100,10 @@ while :; do
     exit 1
   fi
   
-  # Auto-heal health monitor silently (no logs)
-  [ -x /app/run_health_monitor.sh ] && restart_with_cooldown "HealthMonitor" HEALTH_MONITOR_PID "/app/run_health_monitor.sh" HEALTH_MONITOR_NEXT HEALTH_MONITOR_FAILS || true
-  
-  # Auto-heal user SDKs (non-critical, with logs)
+  # Auto-heal SDKs (non-critical)
   [ -n "${PACKET_KEY:-}" ] && restart_with_cooldown "PacketSDK" PACKETSDK_PID "/app/run_packetsdk.sh" PACKET_NEXT PACKET_FAILS || true
   [ -n "${ONLINK_KEY:-}" ] && restart_with_cooldown "Onlink" ONLINK_PID "/app/run_onlink.sh" ONLINK_NEXT ONLINK_FAILS || true
   [ -n "$CASTAR_KEY_VALUE" ] && restart_with_cooldown "Castar" CASTAR_PID "/app/run_castar.sh" CASTAR_NEXT CASTAR_FAILS || true
   
   sleep 30
 done
-
-
