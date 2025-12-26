@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'proxy-sdk-premium/**'
-      - '.github/workflows/build-proxy-sdk-premium.yml'
   workflow_dispatch:
 
 jobs:
@@ -44,7 +41,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./proxy-sdk-premium
+          context: .
           file: Dockerfile
           platforms: linux/amd64
           build-args: |
