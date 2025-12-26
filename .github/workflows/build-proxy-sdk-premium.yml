@@ -45,7 +45,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./proxy-sdk-premium
-          file: ./proxy-sdk-premium/Dockerfile
+          file: Dockerfile
           platforms: linux/amd64
           build-args: |
             TARGETARCH=amd64
