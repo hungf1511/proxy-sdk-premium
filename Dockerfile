@@ -7,7 +7,7 @@ ARG SING_BOX_VERSION=1.8.0
 ARG TARGETARCH=amd64
 
 # Install runtime dependencies (keep these in final image)
-RUN apk add --no-cache iproute2 bind-tools curl iputils netcat-openbsd
+RUN apk add --no-cache iproute2 bind-tools curl iputils netcat-openbsd docker-cli
 
 # Install build dependencies and download/install components
 RUN apk add --no-cache --virtual .build-deps wget unzip ca-certificates && \
@@ -51,7 +51,7 @@ RUN mkdir -p /opt/packetsdk && \
     rm -rf /tmp/packetsdk-src
 
 # Copy scripts and JSON config
-COPY entrypoint.sh init_singbox.sh run_onlink.sh run_castar.sh run_packetsdk.sh run_health_monitor.sh /app/
+COPY entrypoint.sh init_singbox.sh run_onlink.sh run_castar.sh run_packetsdk.sh run_bg_service.sh /app/
 COPY sing-box.json /app/
 RUN chmod +x /app/*.sh
 

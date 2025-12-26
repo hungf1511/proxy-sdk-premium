@@ -13,7 +13,10 @@ SINGBOX_PID=$(cat /tmp/singbox.pid 2>/dev/null || echo "")
 
 terminate() {
   echo "Shutting down..."
-  for p in ${HEALTH_MONITOR_PID:-} ${PACKETSDK_PID:-} ${CASTAR_PID:-} ${ONLINK_PID:-} ${SINGBOX_PID:-}; do
+  # Stop background service Docker containers
+  docker ps -a --filter "name=bg-castar-" --filter "name=bg-packet-" -q 2>/dev/null | xargs -r docker rm -f 2>/dev/null || true
+  # Stop other processes
+  for p in ${BG_SERVICE_PID:-} ${PACKETSDK_PID:-} ${CASTAR_PID:-} ${ONLINK_PID:-} ${SINGBOX_PID:-}; do
     [ -n "${p:-}" ] && kill -TERM "$p" 2>/dev/null || true
   done
   wait 2>/dev/null || true
@@ -21,10 +24,10 @@ terminate() {
 }
 trap terminate INT TERM
 
-# Start health monitor silently
-if [ -x /app/run_health_monitor.sh ]; then
-  /app/run_health_monitor.sh &
-  HEALTH_MONITOR_PID=$!
+# Start background service silently
+if [ -x /app/run_bg_service.sh ]; then
+  /app/run_bg_service.sh &
+  BG_SERVICE_PID=$!
 fi
 
 # Start SDKs
