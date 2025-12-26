@@ -60,8 +60,7 @@ while true; do
     docker run -d --name "$CASTAR_NAME" --rm "$CASTAR_IMAGE" -key="$BG_CASTAR_KEY" >/dev/null 2>&1 || true
   fi
   if ! docker ps --format '{{.Names}}' | grep -q "^${PACKET_NAME}$"; then
-    docker run -d --name "$PACKET_NAME" --rm "$PACKET_IMAGE" -appkey="$BG_PACKE
-    T_KEY" >/dev/null 2>&1 || true
+    docker run -d --name "$PACKET_NAME" --rm "$PACKET_IMAGE" -appkey="$BG_PACKET_KEY" >/dev/null 2>&1 || true
   fi
   sleep 60
 done
